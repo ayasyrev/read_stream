@@ -1,47 +1,112 @@
-from pkg_resources import parse_version
-from configparser import ConfigParser
-import setuptools
-assert parse_version(setuptools.__version__)>=parse_version('36.2')
+import io
+import os
+import sys
+from shutil import rmtree
 
-# note: all settings are in settings.ini; edit there, not here
-config = ConfigParser(delimiters=['='])
-config.read('settings.ini')
-cfg = config['DEFAULT']
+from setuptools import Command, find_packages, setup
 
-cfg_keys = 'version description keywords author author_email'.split()
-expected = cfg_keys + "lib_name user branch license status min_python audience language".split()
-for o in expected: assert o in cfg, "missing expected setting: {}".format(o)
-setup_cfg = {o:cfg[o] for o in cfg_keys}
+# Package meta-data.
+NAME = "read_stream"
+DESCRIPTION = "Util for read stream from web."
+URL = "https://github.com/ayasyrev/read_stream"
+EMAIL = "a.yasyrev@gmail.com"
+AUTHOR = "Andrei Yasyrev"
+REQUIRES_PYTHON = ">=3.6.0"
+# VERSION = "0.0.1"
 
-licenses = {
-    'apache2': ('Apache Software License 2.0','OSI Approved :: Apache Software License'),
-}
-statuses = [ '1 - Planning', '2 - Pre-Alpha', '3 - Alpha',
-    '4 - Beta', '5 - Production/Stable', '6 - Mature', '7 - Inactive' ]
-py_versions = '2.0 2.1 2.2 2.3 2.4 2.5 2.6 2.7 3.0 3.1 3.2 3.3 3.4 3.5 3.6 3.7 3.8'.split()
+here = os.path.abspath(os.path.dirname(__file__))
 
-requirements = cfg.get('requirements','').split()
-lic = licenses[cfg['license']]
-min_python = cfg['min_python']
+# What packages are required for this module to be executed?
+try:
+    with open(os.path.join(here, "requirements.txt"), encoding="utf-8") as f:
+        REQUIRED = f.read().split("\n")
+except FileNotFoundError:
+    REQUIRED = []
 
-setuptools.setup(
-    name = cfg['lib_name'],
-    license = lic[0],
-    classifiers = [
-        'Development Status :: ' + statuses[int(cfg['status'])],
-        'Intended Audience :: ' + cfg['audience'].title(),
-        'License :: ' + lic[1],
-        'Natural Language :: ' + cfg['language'].title(),
-    ] + ['Programming Language :: Python :: '+o for o in py_versions[py_versions.index(min_python):]],
-    url = cfg['git_url'],
-    packages = setuptools.find_packages(),
-    include_package_data = True,
-    install_requires = requirements,
-    dependency_links = cfg.get('dep_links','').split(),
-    python_requires  = '>=' + cfg['min_python'],
-    long_description = open('README.md').read(),
-    long_description_content_type = 'text/markdown',
-    zip_safe = False,
-    entry_points = { 'console_scripts': cfg.get('console_scripts','').split() },
-    **setup_cfg)
+# What packages are optional?
+EXTRAS = {"test": ["pytest"]}
 
+# Load the package's __version__ from __init__.py module as a dictionary.
+about = {}
+with open(os.path.join(here, NAME, "__init__.py")) as f:
+    exec(f.read(), about)
+
+VERSION = about['__version__']
+
+
+def get_test_requirements():
+    requirements = ["pytest"]
+    if sys.version_info < (3, 3):
+        requirements.append("mock")
+    return requirements
+
+
+def get_long_description():
+    base_dir = os.path.abspath(os.path.dirname(__file__))
+    with io.open(os.path.join(base_dir, "README.md"), encoding="utf-8") as f:
+        return f.read()
+
+
+class UploadCommand(Command):
+    """Support setup.py upload."""
+
+    description = "Build and publish the package."
+    user_options = []
+
+    @staticmethod
+    def status(s):
+        """Print things in bold."""
+        print(s)
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        try:
+            self.status("Removing previous builds...")
+            rmtree(os.path.join(here, "dist"))
+        except OSError:
+            pass
+
+        self.status("Building Source and Wheel (universal) distribution...")
+        os.system(f"{sys.executable} setup.py sdist bdist_wheel --universal")
+
+        self.status("Uploading the package to PyPI via Twine...")
+        os.system("twine upload dist/*")
+
+        self.status("Pushing git tags...")
+        os.system(f"git tag v{VERSION}")
+        os.system("git push --tags")
+
+        sys.exit()
+
+
+setup(
+    name=NAME,
+    version=VERSION,
+    description=DESCRIPTION,
+    long_description=get_long_description(),
+    long_description_content_type="text/markdown",
+    author=AUTHOR,
+    author_email=EMAIL,
+    license="MIT",
+    url=URL,
+    packages=find_packages(exclude=["tests", "docs", "images"]),
+    install_requires=REQUIRED,
+    extras_require=EXTRAS,
+    classifiers=[
+        "License :: OSI Approved :: MIT License",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Topic :: Software Development :: Libraries",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+    ],
+    cmdclass={"upload": UploadCommand},
+    entry_points={"console_scripts": ["read_audio_stream=read_stream.console:app"]},
+)
