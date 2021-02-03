@@ -108,5 +108,5 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     cmdclass={"upload": UploadCommand},
-    entry_points={"console_scripts": ["read_stream=read_stream.console:app"]},
+    entry_points={"console_scripts": ["read_audio_stream=read_stream.console:app"]},
 )

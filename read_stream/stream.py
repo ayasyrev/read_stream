@@ -19,7 +19,7 @@ class Stream:
             raise RuntimeError(error)
 
     def read_stream(self, stream_name, fn):
-        stream = self.streams[stream_name]
+        stream = self._streams[stream_name]
         with stream.open() as fd:
             with open(fn, 'wb') as file:
                 while True:
@@ -44,6 +44,7 @@ class AudioStream(Stream):
 
     def read_audio_stream(self, stream_name: str):
         if self.audio_stream:
+            print(self.audio_stream)
             fn = stream_name + '.' + self.audio_extension
             print('Loading audio stream to ', fn)
             self.read_stream(self.audio_stream, fn)
