@@ -1,0 +1,9 @@
+[tool.coverage.paths]
+source = ["read_stream", "*/site-packages"]
+
+[tool.coverage.run]
+branch = true
+source = ["read_stream"]
+
+[tool.coverage.report]
+show_missing = true
