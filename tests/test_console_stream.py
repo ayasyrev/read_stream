@@ -1,7 +1,7 @@
 import pytest
 from typer.testing import CliRunner
 
-from read_stream.console import app
+from read_stream.console_stream import app
 
 from read_stream import __version__
 

@@ -3,7 +3,7 @@ from typing import Optional
 import typer
 
 from read_stream import __version__
-from read_stream.read_audio_stream import read_audio_stream
+from read_stream.read_stream import read_stream
 
 
 app = typer.Typer()
@@ -27,10 +27,9 @@ def main(url: str = typer.Argument(None, help='Strem url'),
 
     if save_name == 'stream':
         save_name = typer.prompt('Enter name for save', default=save_name)
-    # save_name = '.'.join([save_name, 'opus'])
     typer.echo(f"url: {url}")
     typer.echo(f"save name: {save_name}")
-    read_audio_stream(url=url, stream_name=save_name)
+    read_stream(url=url, name_to_save=save_name)
 
 
 if __name__ == "__main__":
