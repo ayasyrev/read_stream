@@ -6,8 +6,8 @@ from read_stream.console import app
 from read_stream import __version__
 
 mock_result = {
-        "title": "Lorem Ipsum",
-        "extract": "Lorem ipsum dolor sit amet",
+        "audio_opus": "audio_stream",
+        "720p": "video_stream",
     }
 
 
