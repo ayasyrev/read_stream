@@ -1,3 +1,4 @@
+.nox/
 *.bak
 .gitattributes
 .last_checked

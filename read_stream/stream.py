@@ -1,5 +1,6 @@
 import streamlink
 from pathlib import PosixPath
+from tqdm import tqdm
 
 DEFAULT_AUDIO = 'audio_opus'
 
@@ -19,16 +20,28 @@ class Stream:
             print('Error read Url', error)
             raise RuntimeError(error)
 
-    def read_stream(self, stream_name, fn):
+    def read_stream(self, stream_name, fn: PosixPath):
         stream = self._streams[stream_name]
         with stream.open() as fd:
             with open(fn, 'wb') as file:
+                total = 100
+                pbar = tqdm(total=total)
+                data_loaded = 0
                 while True:
                     data = fd.read(1024)    # raise IOError("Read timeout")
                     if data:
                         file.write(data)
+                        data_loaded += 1
+                        if data_loaded % 1024 == 0:
+                            pbar.update(1)
+                            pbar.set_description(f"loaded: {data_loaded // 1024}Mb")
+                            if data_loaded // 1024 == total - 1:
+                                total += 100
+                                pbar.total = total
                     else:
                         break
+        file_size = fn.stat().st_size
+        print(f"loaded file: {fn}, size: {file_size // 1024 // 1024}Mb")
 
     def __repr__(self) -> str:
         return f"Streams: {', '.join(self.streams)}"
