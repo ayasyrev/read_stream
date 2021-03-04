@@ -69,4 +69,4 @@ class AudioStream(Stream):
             raise RuntimeError('audio stream unavailible')
 
     def __repr__(self) -> str:
-        return f"Audio streams: {', '.join(list[self.audio_streams])}"
+        return f"Audio streams: {', '.join(self.audio_streams)}"
